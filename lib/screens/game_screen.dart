@@ -130,7 +130,8 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
   late AnimationController _damageController;
   late Animation<double> _damageAnimation;
 
-  final AudioPlayer _clickPlayer = AudioPlayer();
+  final List<AudioPlayer> _clickPlayers = List.generate(5, (_) => AudioPlayer());
+  int _clickPlayerIndex = 0;
   final AudioPlayer _startPlayer = AudioPlayer();
   final AudioPlayer _errorPlayer = AudioPlayer();
 
@@ -193,8 +194,10 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
   }
 
   Future<void> _initAudio() async {
-    await _clickPlayer.setReleaseMode(ReleaseMode.stop);
-    await _clickPlayer.setSourceAsset('click.wav');
+    for (var p in _clickPlayers) {
+      await p.setReleaseMode(ReleaseMode.stop);
+      await p.setSourceAsset('click.wav');
+    }
     await _errorPlayer.setReleaseMode(ReleaseMode.stop);
     await _errorPlayer.setSourceAsset('error.wav');
     await _startPlayer.setReleaseMode(ReleaseMode.stop);
@@ -264,7 +267,9 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
     }
     _effectController.dispose();
     _damageController.dispose();
-    _clickPlayer.dispose();
+    for (var p in _clickPlayers) {
+      p.dispose();
+    }
     _startPlayer.dispose();
     _errorPlayer.dispose();
     _bannerAd?.dispose();
@@ -353,8 +358,9 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
     if (isClear) {
       if (AppSettings.vibrationEnabled) HapticFeedback.lightImpact();
       if (AppSettings.soundEnabled) {
-        _clickPlayer.seek(Duration.zero);
-        _clickPlayer.resume();
+        final p = _clickPlayers[_clickPlayerIndex];
+        p.play(AssetSource('click.wav'));
+        _clickPlayerIndex = (_clickPlayerIndex + 1) % _clickPlayers.length;
       }
       AnimationController controller = AnimationController(
         vsync: this,
@@ -378,8 +384,7 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
     } else {
       if (AppSettings.vibrationEnabled) HapticFeedback.heavyImpact();
       if (AppSettings.soundEnabled) {
-        _errorPlayer.seek(Duration.zero);
-        _errorPlayer.resume();
+        _errorPlayer.play(AssetSource('error.wav'));
       }
       if (currentHearts > 0) {
         setState(() {
@@ -493,8 +498,7 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
             ),
             onPressed: () {
-              Navigator.pop(context);
-              AdManager.showRewardedAd(
+              bool adShown = AdManager.showRewardedAd(
                 (RewardItem reward) {
                   setState(() {
                     freeHints++;
@@ -502,6 +506,12 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
                 },
                 () {}
               );
+              Navigator.pop(context);
+              if (!adShown) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('No ad available right now. Please try again later.')),
+                );
+              }
             },
             child: const Text('Watch', style: TextStyle(color: Colors.white)),
           ),
@@ -565,15 +575,20 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
                     elevation: 0,
                   ),
                   onPressed: () {
-                    Navigator.of(context).pop();
-                    AdManager.showRewardedAd(
+                    bool adShown = AdManager.showRewardedAd(
                       (RewardItem reward) {
                         setState(() {
                           currentHearts += 1;
                         });
+                        if (mounted) Navigator.of(context).pop();
                       },
                       () {}
                     );
+                    if (!adShown) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('No ad available right now. Please try again later.')),
+                      );
+                    }
                   },
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,

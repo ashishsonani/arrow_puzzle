@@ -166,11 +166,11 @@ class AdManager {
     );
   }
 
-  static void showRewardedAd(Function(RewardItem) onRewardEarned, VoidCallback onAdDismissed) {
+  static bool showRewardedAd(Function(RewardItem) onRewardEarned, VoidCallback onAdDismissed) {
     if (_rewardedAd == null) {
       debugPrint('Warning: attempt to show rewarded ad before loaded.');
       onAdDismissed();
-      return;
+      return false;
     }
     _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
@@ -189,6 +189,7 @@ class AdManager {
     _rewardedAd!.show(onUserEarnedReward: (AdWithoutView ad, RewardItem rewardItem) {
       onRewardEarned(rewardItem);
     });
+    return true;
   }
 
   static BannerAd? createBannerAd(VoidCallback onAdLoaded) {

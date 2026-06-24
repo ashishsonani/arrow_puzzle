@@ -4,7 +4,7 @@ import 'package:wakelock_plus/wakelock_plus.dart';
 class AppSettings {
   static late SharedPreferences _prefs;
 
-  static bool _soundEnabled = true;
+  static bool _soundEnabled = false;
   static bool _vibrationEnabled = true;
   static bool _autoLockEnabled = false;
 
@@ -14,7 +14,7 @@ class AppSettings {
 
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
-    _soundEnabled = _prefs.getBool('soundEnabled') ?? true;
+    _soundEnabled = _prefs.getBool('soundEnabled') ?? false;
     _vibrationEnabled = _prefs.getBool('vibrationEnabled') ?? true;
     _autoLockEnabled = _prefs.getBool('autoLockEnabled') ?? false;
 
