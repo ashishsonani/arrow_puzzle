@@ -1,52 +1,93 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-
+import 'package:http/http.dart' as http;
 class AdManager {
   static InterstitialAd? _interstitialAd;
   static RewardedAd? _rewardedAd;
   static AppOpenAd? _appOpenAd;
   static bool _isShowingAd = false;
   static DateTime? _appOpenLoadTime;
+  static bool _isFirstAppOpenAdShown = false;
 
-  // Test Ad Unit IDs
+  static bool showBannerAds = true;
+  static bool showInterstitialAds = true;
+  static int levelAdFrequency = 2;
+  static int adClickCounter = 0;
+
+  static String bannerAdUnitIdAndroid = 'ca-app-pub-8708457885343434/3566001600';
+  static String bannerAdUnitIdIOS = '';
+  static String interstitialAdUnitIdAndroid = 'ca-app-pub-8708457885343434/1833549318';
+  static String interstitialAdUnitIdIOS = '';
+  static String rewardedAdUnitIdAndroid = 'ca-app-pub-8708457885343434/7777964964';
+  static String rewardedAdUnitIdIOS = '';
+  static String appOpenAdUnitIdAndroid = 'ca-app-pub-8708457885343434/6192164944';
+  static String appOpenAdUnitIdIOS = '';
+
   static String get bannerAdUnitId {
-    if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/6300978111';
-    } else if (Platform.isIOS) {
-      return 'ca-app-pub-3940256099942544/2934735716';
-    }
+    if (Platform.isAndroid) return bannerAdUnitIdAndroid;
+    if (Platform.isIOS) return bannerAdUnitIdIOS;
     throw UnsupportedError('Unsupported platform');
   }
 
   static String get interstitialAdUnitId {
-    if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/1033173712';
-    } else if (Platform.isIOS) {
-      return 'ca-app-pub-3940256099942544/4411468910';
-    }
+    if (Platform.isAndroid) return interstitialAdUnitIdAndroid;
+    if (Platform.isIOS) return interstitialAdUnitIdIOS;
     throw UnsupportedError('Unsupported platform');
   }
 
   static String get rewardedAdUnitId {
-    if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/5224354917';
-    } else if (Platform.isIOS) {
-      return 'ca-app-pub-3940256099942544/1712485313';
-    }
+    if (Platform.isAndroid) return rewardedAdUnitIdAndroid;
+    if (Platform.isIOS) return rewardedAdUnitIdIOS;
     throw UnsupportedError('Unsupported platform');
   }
 
   static String get appOpenAdUnitId {
-    if (Platform.isAndroid) {
-      return 'ca-app-pub-3940256099942544/9257395921'; // Test ID
-    } else if (Platform.isIOS) {
-      return 'ca-app-pub-3940256099942544/5575463023'; // Test ID
-    }
+    if (Platform.isAndroid) return appOpenAdUnitIdAndroid;
+    if (Platform.isIOS) return appOpenAdUnitIdIOS;
     throw UnsupportedError('Unsupported platform');
   }
 
+  static Future<void> fetchAdConfig() async {
+    try {
+      final response = await http.get(Uri.parse('https://raw.githubusercontent.com/ashishsonani/arrow_puzzle/main/ads_config.json'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+
+        showBannerAds = data['show_banner_ads'] ?? true;
+        showInterstitialAds = data['show_interstitial_ads'] ?? true;
+        levelAdFrequency = data['level_ad_frequency'] ?? 2;
+
+        if (data['android'] != null) {
+          bannerAdUnitIdAndroid = data['android']['banner'] ?? bannerAdUnitIdAndroid;
+          interstitialAdUnitIdAndroid = data['android']['interstitial'] ?? interstitialAdUnitIdAndroid;
+          rewardedAdUnitIdAndroid = data['android']['rewarded'] ?? rewardedAdUnitIdAndroid;
+          appOpenAdUnitIdAndroid = data['android']['app_open'] ?? appOpenAdUnitIdAndroid;
+        }
+        if (data['ios'] != null) {
+          bannerAdUnitIdIOS = data['ios']['banner'] ?? bannerAdUnitIdIOS;
+          interstitialAdUnitIdIOS = data['ios']['interstitial'] ?? interstitialAdUnitIdIOS;
+          rewardedAdUnitIdIOS = data['ios']['rewarded'] ?? rewardedAdUnitIdIOS;
+          appOpenAdUnitIdIOS = data['ios']['app_open'] ?? appOpenAdUnitIdIOS;
+        }
+        debugPrint('Ad config fetched successfully');
+        
+        // Start loading ads immediately after fetching config
+        loadInterstitialAd();
+        loadRewardedAd();
+        loadAppOpenAd();
+      } else {
+        debugPrint('Failed to load ad config: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error fetching ad config: $e');
+    }
+  }
+
+
   static void loadInterstitialAd() {
+    if (interstitialAdUnitId.isEmpty) return;
     InterstitialAd.load(
       adUnitId: interstitialAdUnitId,
       request: const AdRequest(),
@@ -62,7 +103,30 @@ class AdManager {
     );
   }
 
+  static void incrementLevelClick() {
+    adClickCounter++;
+  }
+
+  static bool _isFirstAdShown = false;
+
+  static bool shouldShowInterstitialAd() {
+    if (!showInterstitialAds) return false;
+
+    if (!_isFirstAdShown) {
+      _isFirstAdShown = true;
+      adClickCounter = 0; // Reset counter so next ad is exactly levelAdFrequency clicks away
+      return true;
+    }
+
+    return (adClickCounter % levelAdFrequency == 0);
+  }
+
   static void showInterstitialAd(VoidCallback onAdDismissed) {
+    incrementLevelClick();
+    if (!shouldShowInterstitialAd()) {
+      onAdDismissed();
+      return;
+    }
     if (_interstitialAd == null) {
       debugPrint('Warning: attempt to show interstitial before loaded.');
       onAdDismissed();
@@ -86,6 +150,7 @@ class AdManager {
   }
 
   static void loadRewardedAd() {
+    if (rewardedAdUnitId.isEmpty) return;
     RewardedAd.load(
       adUnitId: rewardedAdUnitId,
       request: const AdRequest(),
@@ -126,7 +191,8 @@ class AdManager {
     });
   }
 
-  static BannerAd createBannerAd(VoidCallback onAdLoaded) {
+  static BannerAd? createBannerAd(VoidCallback onAdLoaded) {
+    if (!showBannerAds || bannerAdUnitId.isEmpty) return null;
     return BannerAd(
       adUnitId: bannerAdUnitId,
       size: AdSize.banner,
@@ -142,6 +208,7 @@ class AdManager {
   }
 
   static void loadAppOpenAd() {
+    if (appOpenAdUnitId.isEmpty) return;
     AppOpenAd.load(
       adUnitId: appOpenAdUnitId,
       request: const AdRequest(),
@@ -149,6 +216,10 @@ class AdManager {
         onAdLoaded: (ad) {
           _appOpenLoadTime = DateTime.now();
           _appOpenAd = ad;
+          if (!_isFirstAppOpenAdShown) {
+            _isFirstAppOpenAdShown = true;
+            showAppOpenAdIfAvailable();
+          }
         },
         onAdFailedToLoad: (error) {
           debugPrint('AppOpenAd failed to load: $error');

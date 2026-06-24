@@ -77,17 +77,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: GestureDetector(
                     onTap: () {
-                      final now = DateTime.now();
-                      int levelSeed = now.year * 10000 + now.month * 100 + now.day;
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => GameScreen(
-                            initialLevel: levelSeed,
-                            isDailyChallenge: true,
+                      void proceed() {
+                        final now = DateTime.now();
+                        int levelSeed = now.year * 10000 + now.month * 100 + now.day;
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => GameScreen(
+                              initialLevel: levelSeed,
+                              isDailyChallenge: true,
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      }
+                      AdManager.showInterstitialAd(proceed);
                     },
                     child: Container(
                       padding: const EdgeInsets.all(16),
@@ -193,11 +196,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         children: [
                           TextSpan(
-                            text: 'Draw',
+                            text: 'Arrow',
                             style: TextStyle(color: Colors.white), // Dark color
                           ),
                           TextSpan(
-                            text: 'Link',
+                            text: 'Flow',
                             style: TextStyle(color: Color(0xFF4CAF50)), // Soft green
                           ),
                         ],
@@ -228,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 10),
                           child: Text(
-                            'ONE LINE. SOLVE IT.',
+                            'ARROW PUZZLE',
                             style: TextStyle(
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
@@ -266,12 +269,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 40),
                   child: GestureDetector(
-                    onTap: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => GameScreen(initialLevel: currentLevel)),
-                      );
-                      _loadLevel(); // Refresh level when coming back
+                    onTap: () {
+                      void proceed() async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => GameScreen(initialLevel: currentLevel)),
+                        );
+                        _loadLevel(); // Refresh level when coming back
+                      }
+                      AdManager.showInterstitialAd(proceed);
                     },
                     child: Container(
                       width: double.infinity,

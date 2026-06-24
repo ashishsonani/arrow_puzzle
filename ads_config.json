@@ -3,10 +3,10 @@
   "show_interstitial_ads": true,
   "level_ad_frequency": 2,
   "android": {
-    "banner": "ca-app-pub-3940256099942544/6300978111",
-    "interstitial": "ca-app-pub-3940256099942544/1033173712",
-    "rewarded": "ca-app-pub-3940256099942544/5224354917",
-    "app_open": "ca-app-pub-3940256099942544/9257395921"
+    "banner": "ca-app-pub-8708457885343434/3566001600",
+    "interstitial": "ca-app-pub-8708457885343434/1833549318",
+    "rewarded": "ca-app-pub-8708457885343434/7777964964",
+    "app_open": "ca-app-pub-8708457885343434/6192164944"
   },
   "ios": {
     "banner": "ca-app-pub-3940256099942544/2934735716",

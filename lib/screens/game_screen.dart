@@ -73,11 +73,7 @@ class _GameScreenState extends State<GameScreen> {
                 }
               }
 
-              if (levelNum % 3 == 0) {
-                AdManager.showInterstitialAd(proceed);
-              } else {
-                proceed();
-              }
+              AdManager.showInterstitialAd(proceed);
             },
           );
         },
