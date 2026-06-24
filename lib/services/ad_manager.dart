@@ -20,7 +20,7 @@ class AdManager {
   static String bannerAdUnitIdIOS = '';
   static String interstitialAdUnitIdAndroid = 'ca-app-pub-8708457885343434/1833549318';
   static String interstitialAdUnitIdIOS = '';
-  static String rewardedAdUnitIdAndroid = 'ca-app-pub-8708457885343434/7777964964';
+  static String rewardedAdUnitIdAndroid = 'ca-app-pub-8708457885343434/9728919427';
   static String rewardedAdUnitIdIOS = '';
   static String appOpenAdUnitIdAndroid = 'ca-app-pub-8708457885343434/6192164944';
   static String appOpenAdUnitIdIOS = '';
