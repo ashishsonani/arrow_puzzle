@@ -32,8 +32,6 @@ class GameScreen extends StatefulWidget {
 
 class _GameScreenState extends State<GameScreen> {
   late PageController _pageController;
-  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
-  bool _isDisconnected = false;
 
   @override
   void initState() {
@@ -41,52 +39,10 @@ class _GameScreenState extends State<GameScreen> {
     _pageController = PageController(
       initialPage: widget.isDailyChallenge ? 0 : widget.initialLevel - 1,
     );
-    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
-      bool disconnected = results.isEmpty || results.contains(ConnectivityResult.none) || results.every((r) => r == ConnectivityResult.none);
-      if (disconnected && !_isDisconnected) {
-        _isDisconnected = true;
-        _showNoInternetDialog();
-      } else if (!disconnected && _isDisconnected) {
-        _isDisconnected = false;
-        if (mounted && Navigator.canPop(context)) {
-          Navigator.of(context).pop(); // dismiss dialog
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Internet Connected!', style: TextStyle(color: Colors.white)), 
-              backgroundColor: Colors.green,
-            )
-          );
-        }
-      }
-    });
-  }
-
-  void _showNoInternetDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => _NoInternetDialog(
-        onConnected: () {
-          if (_isDisconnected) {
-            _isDisconnected = false;
-            if (mounted && Navigator.canPop(context)) {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Internet Connected!', style: TextStyle(color: Colors.white)), 
-                  backgroundColor: Colors.green,
-                )
-              );
-            }
-          }
-        }
-      ),
-    );
   }
 
   @override
   void dispose() {
-    _connectivitySubscription?.cancel();
     _pageController.dispose();
     super.dispose();
   }
@@ -1775,52 +1731,5 @@ class TapAwayPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant TapAwayPainter oldDelegate) => true;
-}
-
-class _NoInternetDialog extends StatefulWidget {
-  final VoidCallback onConnected;
-  const _NoInternetDialog({required this.onConnected});
-  @override
-  State<_NoInternetDialog> createState() => _NoInternetDialogState();
-}
-
-class _NoInternetDialogState extends State<_NoInternetDialog> {
-  bool _isLoading = false;
-
-  Future<void> _checkConnection() async {
-    setState(() => _isLoading = true);
-    // Add a small delay so the spinner is visible to the user
-    await Future.delayed(const Duration(milliseconds: 1000));
-    final results = await Connectivity().checkConnectivity();
-    bool disconnected = results.isEmpty || results.contains(ConnectivityResult.none) || results.every((r) => r == ConnectivityResult.none);
-    
-    if (mounted) {
-      setState(() => _isLoading = false);
-      if (!disconnected) {
-        widget.onConnected();
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      child: AlertDialog(
-        backgroundColor: const Color(0xFF1E1E1E),
-        title: const Text('No Internet', style: TextStyle(color: Colors.white)),
-        content: const Text('Please check your network settings. The game requires an active internet connection to continue.', style: TextStyle(color: Colors.grey)),
-        actions: [
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-            onPressed: _isLoading ? null : _checkConnection,
-            child: _isLoading 
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                : const Text('Retry', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
-  }
 }
 

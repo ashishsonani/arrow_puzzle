@@ -12,6 +12,7 @@ class AppSplashScreen extends StatefulWidget {
 
 class _AppSplashScreenState extends State<AppSplashScreen> {
   bool _hasError = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -20,9 +21,11 @@ class _AppSplashScreenState extends State<AppSplashScreen> {
   }
 
   Future<void> _checkInternetAndProceed() async {
-    setState(() {
-      _hasError = false;
-    });
+    if (_hasError) {
+      setState(() {
+        _isLoading = true;
+      });
+    }
 
     final startTime = DateTime.now();
     bool hasInternet = false;
@@ -43,8 +46,10 @@ class _AppSplashScreenState extends State<AppSplashScreen> {
       await AdManager.fetchAdConfig();
 
       final elapsedTime = DateTime.now().difference(startTime);
-      if (elapsedTime.inMilliseconds < 1500) {
+      if (!_hasError && elapsedTime.inMilliseconds < 1500) {
         await Future.delayed(Duration(milliseconds: 1500 - elapsedTime.inMilliseconds));
+      } else if (_hasError && elapsedTime.inMilliseconds < 1000) {
+        await Future.delayed(Duration(milliseconds: 1000 - elapsedTime.inMilliseconds));
       }
 
       if (mounted) {
@@ -53,9 +58,18 @@ class _AppSplashScreenState extends State<AppSplashScreen> {
         );
       }
     } else {
-      setState(() {
-        _hasError = true;
-      });
+      if (_hasError) {
+        final elapsedTime = DateTime.now().difference(startTime);
+        if (elapsedTime.inMilliseconds < 1000) {
+          await Future.delayed(Duration(milliseconds: 1000 - elapsedTime.inMilliseconds));
+        }
+      }
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -109,7 +123,7 @@ class _AppSplashScreenState extends State<AppSplashScreen> {
         ),
         const SizedBox(height: 30),
         ElevatedButton(
-          onPressed: _checkInternetAndProceed,
+          onPressed: _isLoading ? null : _checkInternetAndProceed,
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF4CAF50),
             padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
@@ -117,10 +131,16 @@ class _AppSplashScreenState extends State<AppSplashScreen> {
               borderRadius: BorderRadius.circular(30),
             ),
           ),
-          child: const Text(
-            'Retry',
-            style: TextStyle(fontSize: 18, color: Colors.white),
-          ),
+          child: _isLoading
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                )
+              : const Text(
+                  'Retry',
+                  style: TextStyle(fontSize: 18, color: Colors.white),
+                ),
         ),
       ],
     );
