@@ -14,7 +14,6 @@ import '../models/app_settings.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../services/ad_manager.dart';
 import 'dart:async';
-import 'package:connectivity_plus/connectivity_plus.dart';
 
 class GameScreen extends StatefulWidget {
   final int initialLevel;
