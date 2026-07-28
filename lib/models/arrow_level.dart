@@ -30,6 +30,56 @@ class PathArrow {
   }
 }
 
+enum LevelShape {
+  rectangle,
+  triangle,
+  heart,
+  circle,
+  diamond,
+  cross,
+  star,
+}
+
+extension LevelShapeExtension on LevelShape {
+  String get displayName {
+    switch (this) {
+      case LevelShape.rectangle:
+        return 'Rectangle';
+      case LevelShape.triangle:
+        return 'Triangle';
+      case LevelShape.heart:
+        return 'Heart';
+      case LevelShape.circle:
+        return 'Circle';
+      case LevelShape.diamond:
+        return 'Diamond';
+      case LevelShape.cross:
+        return 'Cross';
+      case LevelShape.star:
+        return 'Star';
+    }
+  }
+
+  String get emoji {
+    switch (this) {
+      case LevelShape.rectangle:
+        return '⬛';
+      case LevelShape.triangle:
+        return '🔺';
+      case LevelShape.heart:
+        return '❤️';
+      case LevelShape.circle:
+        return '🔴';
+      case LevelShape.diamond:
+        return '🔷';
+      case LevelShape.cross:
+        return '➕';
+      case LevelShape.star:
+        return '⭐';
+    }
+  }
+}
+
 class ArrowLevel {
   final int id;
   final String title;
@@ -38,6 +88,7 @@ class ArrowLevel {
   final int gridWidth;
   final int gridHeight;
   final List<PathArrow> paths;
+  final LevelShape shape;
 
   ArrowLevel({
     required this.id,
@@ -47,6 +98,7 @@ class ArrowLevel {
     required this.gridWidth,
     required this.gridHeight,
     required this.paths,
+    this.shape = LevelShape.rectangle,
   });
 }
 

@@ -10,19 +10,72 @@ class ArrowLevelSelectionScreen extends StatelessWidget {
     return [
       LevelCategory(
         id: 'c1',
-        title: 'Tangle Puzzle',
+        title: 'Rectangle Puzzle ⬛',
         levels: [
           ArrowLevel(
-            id: 6,
-            title: 'Level 6',
+            id: 1,
+            title: 'Level 1',
             difficulty: 'Easy',
-            gridWidth: 10,
-            gridHeight: 10,
+            gridWidth: 6,
+            gridHeight: 6,
+            shape: LevelShape.rectangle,
             paths: [
-              // Simple mock paths for now to get it compiling
-              // I will refine the heart shape later if needed
+              PathArrow(id: 1, segments: const [Point(1, 1), Point(2, 1), Point(2, 2)]),
+              PathArrow(id: 2, segments: const [Point(4, 4), Point(4, 3), Point(5, 3)]),
+            ],
+          ),
+        ],
+      ),
+      LevelCategory(
+        id: 'c2',
+        title: 'Triangle Puzzle 🔺',
+        levels: [
+          ArrowLevel(
+            id: 2,
+            title: 'Level 2',
+            difficulty: 'Medium',
+            gridWidth: 7,
+            gridHeight: 7,
+            shape: LevelShape.triangle,
+            paths: [
+              PathArrow(id: 1, segments: const [Point(3, 1), Point(3, 2), Point(4, 2)]),
+              PathArrow(id: 2, segments: const [Point(2, 4), Point(3, 4), Point(3, 5)]),
+            ],
+          ),
+        ],
+      ),
+      LevelCategory(
+        id: 'c3',
+        title: 'Heart Puzzle ❤️',
+        levels: [
+          ArrowLevel(
+            id: 3,
+            title: 'Level 3',
+            difficulty: 'Medium',
+            gridWidth: 8,
+            gridHeight: 8,
+            shape: LevelShape.heart,
+            paths: [
               PathArrow(id: 1, segments: const [Point(2, 2), Point(3, 2), Point(3, 3)]),
               PathArrow(id: 2, segments: const [Point(5, 5), Point(5, 4), Point(6, 4)]),
+            ],
+          ),
+        ],
+      ),
+      LevelCategory(
+        id: 'c4',
+        title: 'Diamond Puzzle 🔷',
+        levels: [
+          ArrowLevel(
+            id: 4,
+            title: 'Level 4',
+            difficulty: 'Hard',
+            gridWidth: 8,
+            gridHeight: 8,
+            shape: LevelShape.diamond,
+            paths: [
+              PathArrow(id: 1, segments: const [Point(4, 2), Point(4, 3), Point(5, 3)]),
+              PathArrow(id: 2, segments: const [Point(3, 5), Point(4, 5), Point(4, 6)]),
             ],
           ),
         ],

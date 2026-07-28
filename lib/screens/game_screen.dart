@@ -701,106 +701,106 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
           Container(
             decoration: const BoxDecoration(
               color: Color(0xFF161616), // Dark background matching the rest of the app
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                // Top Bar
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 24),
-                        onPressed: widget.onBack,
-                      ),
-                      Text(
-                        _getLevelTitle(),
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF4CAF50), // Set level text to green
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  // Top Bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 24),
+                          onPressed: widget.onBack,
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 24),
-                        onPressed: () => _showSettingsMenu(context),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Stats Bar
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Position Stat
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white12, // Dark theme badge
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.navigation, size: 16, color: Colors.white),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${activeStrings.length}', // Live Arrow Count
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Hearts
-                      Row(
-                        children: List.generate(
-                          maxHearts,
-                          (index) => Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 3.0),
-                            child: AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 300),
-                              transitionBuilder: (Widget child, Animation<double> animation) {
-                                return ScaleTransition(scale: animation, child: child);
-                              },
-                              child: Icon(
-                                index < currentHearts ? Icons.favorite : Icons.favorite_border,
-                                key: ValueKey<bool>(index < currentHearts),
-                                color: Colors.red,
-                                size: 24,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      // Difficulty Badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white12, // Dark theme badge
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          _getDifficulty(widget.levelNum),
+                        Text(
+                          _getLevelTitle(),
                           style: const TextStyle(
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            fontSize: 13,
+                            color: Color(0xFF4CAF50), // Green level text
                           ),
                         ),
-                      ),
-                    ],
+                        IconButton(
+                          icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 24),
+                          onPressed: () => _showSettingsMenu(context),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+
+                  // Stats Bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Arrow Count Badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: Colors.white12,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.navigation, size: 16, color: Colors.white),
+                              const SizedBox(width: 6),
+                              Text(
+                                '${activeStrings.length}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Hearts
+                        Row(
+                          children: List.generate(
+                            maxHearts,
+                            (index) => Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 300),
+                                transitionBuilder: (Widget child, Animation<double> animation) {
+                                  return ScaleTransition(scale: animation, child: child);
+                                },
+                                child: Icon(
+                                  Icons.favorite,
+                                  key: ValueKey<bool>(index < currentHearts),
+                                  color: index < currentHearts ? Colors.red : Colors.white24,
+                                  size: 24,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        // Difficulty Badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: Colors.white12,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Text(
+                            _getDifficulty(widget.levelNum),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
                 const Spacer(),
 
@@ -1583,25 +1583,36 @@ class TapAwayPainter extends CustomPainter {
     double cellPadX = cellWidth / 2;
     double cellPadY = cellHeight / 2;
 
-    // Draw background dot grid
+    Set<Point> occupiedPoints = {};
+    for (var string in activeStrings) {
+      for (var p in string.path) {
+        occupiedPoints.add(p);
+      }
+    }
+
+    // Draw background dot grid ONLY on empty shape cells (matching reference screenshot)
     final dotPaint = Paint()
       ..color = Colors.white24
       ..style = PaintingStyle.fill;
 
     for (int x = 0; x < levelData.gridWidth; x++) {
       for (int y = 0; y < levelData.gridHeight; y++) {
-        canvas.drawCircle(
-          Offset(x * cellWidth + cellPadX, y * cellHeight + cellPadY),
-          2.5,
-          dotPaint,
-        );
+        if (PuzzleGenerator.isCellInShape(x, y, levelData.gridWidth, levelData.gridHeight, levelData.shape)) {
+          if (!occupiedPoints.contains(Point(x, y))) {
+            canvas.drawCircle(
+              Offset(x * cellWidth + cellPadX, y * cellHeight + cellPadY),
+              max(2.0, cellWidth * 0.08),
+              dotPaint,
+            );
+          }
+        }
       }
     }
 
     if (showGridLines) {
       final linePaint = Paint()
         ..color = Colors.white.withOpacity(0.15)
-        ..strokeWidth = 3.0
+        ..strokeWidth = 2.0
         ..style = PaintingStyle.stroke;
 
       Set<int> occupiedX = {};
@@ -1615,28 +1626,17 @@ class TapAwayPainter extends CustomPainter {
 
       for (int x in occupiedX) {
         double dx = x * cellWidth + cellPadX;
-        linePaint.shader = ui.Gradient.linear(
-          Offset(dx, 0),
-          Offset(dx, size.height),
-          [Colors.transparent, Colors.white24, Colors.white24, Colors.transparent],
-          [0.0, 0.2, 0.8, 1.0],
-        );
         canvas.drawLine(Offset(dx, 0), Offset(dx, size.height), linePaint);
       }
       for (int y in occupiedY) {
         double dy = y * cellHeight + cellPadY;
-        linePaint.shader = ui.Gradient.linear(
-          Offset(0, dy),
-          Offset(size.width, dy),
-          [Colors.transparent, Colors.white24, Colors.white24, Colors.transparent],
-          [0.0, 0.2, 0.8, 1.0],
-        );
         canvas.drawLine(Offset(0, dy), Offset(size.width, dy), linePaint);
       }
     }
 
+    double strokeW = max(3.5, cellWidth * 0.14);
     final paint = Paint()
-      ..strokeWidth = 5.0
+      ..strokeWidth = strokeW
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
@@ -1649,11 +1649,11 @@ class TapAwayPainter extends CustomPainter {
       canvas.save();
 
       if (wiggle && animValue > 0) {
-        paint.color = Colors.red; // Blocked -> Red
+        paint.color = const Color(0xFFEF4444); // Blocked -> Red
       } else if (hint && animValue > 0) {
         paint.color = Colors.white; // Hint -> White
       } else if (animValue > 0 && !wiggle && !hint) {
-        paint.color = Colors.white; // Moving -> White
+        paint.color = const Color(0xFF00E5FF); // Moving/Active -> Bright Cyan
       } else {
         paint.color = const Color(0xFF4CAF50); // Stationary -> Green
       }
@@ -1666,6 +1666,22 @@ class TapAwayPainter extends CustomPainter {
         } else {
           canvas.translate(0, shake);
         }
+      }
+
+      Point headPoint = string.head;
+      double arrowAngle = 0;
+      if (string.path.length >= 2) {
+        Point prevPoint = string.path[string.path.length - 2];
+        arrowAngle = atan2(
+          (headPoint.y - prevPoint.y).toDouble(),
+          (headPoint.x - prevPoint.x).toDouble(),
+        );
+      } else {
+        Direction dir = string.exitDirection;
+        if (dir == Direction.right) arrowAngle = 0;
+        if (dir == Direction.left) arrowAngle = pi;
+        if (dir == Direction.down) arrowAngle = pi / 2;
+        if (dir == Direction.up) arrowAngle = -pi / 2;
       }
 
       Path basePath = Path();
@@ -1713,28 +1729,22 @@ class TapAwayPainter extends CustomPainter {
 
           ui.Tangent? tangent = metric.getTangentForOffset(min(endDist, metric.length));
           if (tangent != null) {
-            _drawPathWithArrow(canvas, paint, basePath, tangent.position, atan2(tangent.vector.dy, tangent.vector.dx));
+            _drawPathWithArrow(canvas, paint, basePath, tangent.position, atan2(tangent.vector.dy, tangent.vector.dx), cellWidth);
           }
         }
       } else {
-        double arrowAngle = 0;
-        if (dir == Direction.right) arrowAngle = 0;
-        if (dir == Direction.left) arrowAngle = pi;
-        if (dir == Direction.down) arrowAngle = pi / 2;
-        if (dir == Direction.up) arrowAngle = -pi / 2;
-
         Offset headOffset = Offset(string.head.x * cellWidth + cellPadX, string.head.y * cellHeight + cellPadY);
-        _drawPathWithArrow(canvas, paint, basePath, headOffset, arrowAngle);
+        _drawPathWithArrow(canvas, paint, basePath, headOffset, arrowAngle, cellWidth);
       }
 
       canvas.restore();
     }
   }
 
-  void _drawPathWithArrow(Canvas canvas, Paint paint, Path bodyPath, Offset headOffset, double angle) {
+  void _drawPathWithArrow(Canvas canvas, Paint paint, Path bodyPath, Offset headOffset, double angle, double cellWidth) {
     canvas.drawPath(bodyPath, paint);
 
-    double arrowLen = 12.0;
+    double arrowLen = max(10.0, cellWidth * 0.28);
     Path arrow = Path();
     arrow.moveTo(headOffset.dx, headOffset.dy);
     arrow.lineTo(headOffset.dx - arrowLen * cos(angle - pi / 6), headOffset.dy - arrowLen * sin(angle - pi / 6));

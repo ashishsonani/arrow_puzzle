@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import '../models/arrow_level.dart';
 import '../widgets/path_arrow_widget.dart';
+import '../game/puzzle_generator.dart';
 
 class ArrowGameplayScreen extends StatefulWidget {
   final ArrowLevel level;
@@ -259,10 +260,11 @@ class _ArrowGameplayScreenState extends State<ArrowGameplayScreen> with TickerPr
                             children: [
                               CustomPaint(
                                 size: Size(constraints.maxWidth, constraints.maxHeight),
-                                painter: DottedHeartPainter(
+                                painter: DottedShapePainter(
                                   gridWidth: currentLevel.gridWidth,
                                   gridHeight: currentLevel.gridHeight,
                                   cellSize: cellSize,
+                                  shape: currentLevel.shape,
                                 ),
                               ),
                               ...currentLevel.paths.map((arrow) {
@@ -336,15 +338,17 @@ class _ArrowGameplayScreenState extends State<ArrowGameplayScreen> with TickerPr
   }
 }
 
-class DottedHeartPainter extends CustomPainter {
+class DottedShapePainter extends CustomPainter {
   final int gridWidth;
   final int gridHeight;
   final double cellSize;
+  final LevelShape shape;
 
-  DottedHeartPainter({
+  DottedShapePainter({
     required this.gridWidth,
     required this.gridHeight,
     required this.cellSize,
+    required this.shape,
   });
 
   @override
@@ -353,15 +357,15 @@ class DottedHeartPainter extends CustomPainter {
       ..color = Colors.grey.withOpacity(0.3)
       ..style = PaintingStyle.fill;
 
-    // Draw dots at all grid centers for now
-    // In a full implementation, we can restrict this to a heart mask
     for (int y = 0; y < gridHeight; y++) {
       for (int x = 0; x < gridWidth; x++) {
-        canvas.drawCircle(
-          Offset(x * cellSize + cellSize / 2, y * cellSize + cellSize / 2),
-          cellSize * 0.05,
-          paint,
-        );
+        if (PuzzleGenerator.isCellInShape(x, y, gridWidth, gridHeight, shape)) {
+          canvas.drawCircle(
+            Offset(x * cellSize + cellSize / 2, y * cellSize + cellSize / 2),
+            cellSize * 0.08,
+            paint,
+          );
+        }
       }
     }
   }
