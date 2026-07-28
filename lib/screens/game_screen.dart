@@ -822,7 +822,13 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
 
                           List<Listenable> listenables = animControllers.values.toList();
 
-                          return GestureDetector(
+                          return InteractiveViewer(
+                            minScale: 1.0,
+                            maxScale: 4.0,
+                            panEnabled: true,
+                            scaleEnabled: true,
+                            clipBehavior: Clip.none,
+                            child: GestureDetector(
                               behavior: HitTestBehavior.opaque,
                               onTapUp: (details) {
                                 if (isLevelComplete) return;
@@ -858,7 +864,8 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
                                   );
                                 },
                               ),
-                            );
+                            ),
+                          );
                           },
                         ),
                     ),

@@ -231,51 +231,58 @@ class _ArrowGameplayScreenState extends State<ArrowGameplayScreen> with TickerPr
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         final cellSize = constraints.maxWidth / currentLevel.gridWidth;
-                        return GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTapUp: (details) {
-                            final localPosition = details.localPosition;
-                            final gridX = (localPosition.dx / cellSize).floor();
-                            final gridY = (localPosition.dy / cellSize).floor();
+                        return InteractiveViewer(
+                          minScale: 1.0,
+                          maxScale: 4.0,
+                          panEnabled: true,
+                          scaleEnabled: true,
+                          clipBehavior: Clip.none,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTapUp: (details) {
+                              final localPosition = details.localPosition;
+                              final gridX = (localPosition.dx / cellSize).floor();
+                              final gridY = (localPosition.dy / cellSize).floor();
 
-                            PathArrow? tappedArrow;
-                            for (var arrow in currentLevel.paths.reversed) {
-                              if (arrow.state == ArrowState.cleared) continue;
-                              bool found = false;
-                              for (var seg in arrow.segments) {
-                                if (seg.x == gridX && seg.y == gridY) {
-                                  tappedArrow = arrow;
-                                  found = true;
-                                  break;
+                              PathArrow? tappedArrow;
+                              for (var arrow in currentLevel.paths.reversed) {
+                                if (arrow.state == ArrowState.cleared) continue;
+                                bool found = false;
+                                for (var seg in arrow.segments) {
+                                  if (seg.x == gridX && seg.y == gridY) {
+                                    tappedArrow = arrow;
+                                    found = true;
+                                    break;
+                                  }
                                 }
+                                if (found) break;
                               }
-                              if (found) break;
-                            }
 
-                            if (tappedArrow != null) {
-                              _onPathTap(tappedArrow);
-                            }
-                          },
-                          child: Stack(
-                            children: [
-                              CustomPaint(
-                                size: Size(constraints.maxWidth, constraints.maxHeight),
-                                painter: DottedShapePainter(
-                                  gridWidth: currentLevel.gridWidth,
-                                  gridHeight: currentLevel.gridHeight,
-                                  cellSize: cellSize,
-                                  shape: currentLevel.shape,
+                              if (tappedArrow != null) {
+                                _onPathTap(tappedArrow);
+                              }
+                            },
+                            child: Stack(
+                              children: [
+                                CustomPaint(
+                                  size: Size(constraints.maxWidth, constraints.maxHeight),
+                                  painter: DottedShapePainter(
+                                    gridWidth: currentLevel.gridWidth,
+                                    gridHeight: currentLevel.gridHeight,
+                                    cellSize: cellSize,
+                                    shape: currentLevel.shape,
+                                  ),
                                 ),
-                              ),
-                              ...currentLevel.paths.map((arrow) {
-                                if (arrow.state == ArrowState.cleared) return const SizedBox.shrink();
-                                return PathArrowWidget(
-                                  arrow: arrow,
-                                  cellSize: cellSize,
-                                  onTap: () {}, // Handled by parent GestureDetector now
-                                );
-                              }),
-                            ],
+                                ...currentLevel.paths.map((arrow) {
+                                  if (arrow.state == ArrowState.cleared) return const SizedBox.shrink();
+                                  return PathArrowWidget(
+                                    arrow: arrow,
+                                    cellSize: cellSize,
+                                    onTap: () {}, // Handled by parent GestureDetector now
+                                  );
+                                }),
+                              ],
+                            ),
                           ),
                         );
                       },
