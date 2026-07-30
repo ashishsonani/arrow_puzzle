@@ -1,4 +1,4 @@
-// ignore_for_file: unused_import, unused_field, unused_element
+// ignore_for_file: unused_import, unused_field, unused_element, prefer_final_fields
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
