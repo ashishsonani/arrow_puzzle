@@ -1,3 +1,4 @@
+// ignore_for_file: unused_import, unused_field, unused_element
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
@@ -50,60 +51,12 @@ class AdManager {
   }
 
   static Future<void> fetchAdConfig() async {
-    try {
-      final response = await http.get(Uri.parse('https://raw.githubusercontent.com/ashishsonani/arrow_puzzle/main/ads_config.json'));
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-
-        showBannerAds = data['show_banner_ads'] ?? true;
-        showInterstitialAds = data['show_interstitial_ads'] ?? true;
-        levelAdFrequency = data['level_ad_frequency'] ?? 2;
-
-        if (data['android'] != null) {
-          bannerAdUnitIdAndroid = data['android']['banner'] ?? bannerAdUnitIdAndroid;
-          interstitialAdUnitIdAndroid = data['android']['interstitial'] ?? interstitialAdUnitIdAndroid;
-          rewardedAdUnitIdAndroid = data['android']['rewarded'] ?? rewardedAdUnitIdAndroid;
-          appOpenAdUnitIdAndroid = data['android']['app_open'] ?? appOpenAdUnitIdAndroid;
-        }
-        if (data['ios'] != null) {
-          bannerAdUnitIdIOS = data['ios']['banner'] ?? bannerAdUnitIdIOS;
-          interstitialAdUnitIdIOS = data['ios']['interstitial'] ?? interstitialAdUnitIdIOS;
-          rewardedAdUnitIdIOS = data['ios']['rewarded'] ?? rewardedAdUnitIdIOS;
-          appOpenAdUnitIdIOS = data['ios']['app_open'] ?? appOpenAdUnitIdIOS;
-        }
-        debugPrint('Ad config fetched successfully');
-        
-        // Start loading ads immediately after fetching config
-        loadInterstitialAd();
-        loadRewardedAd();
-        loadAppOpenAd();
-      } else {
-        debugPrint('Failed to load ad config: ${response.statusCode}');
-      }
-    } catch (e) {
-      debugPrint('Error fetching ad config: $e');
-    }
+    // Disabled for live launch
+    return;
   }
 
-
   static void loadInterstitialAd() {
-    if (interstitialAdUnitId.isEmpty) return;
-    InterstitialAd.load(
-      adUnitId: interstitialAdUnitId,
-      request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) {
-          _interstitialAd = ad;
-        },
-        onAdFailedToLoad: (error) {
-          debugPrint('InterstitialAd failed to load: $error');
-          _interstitialAd = null;
-          Future.delayed(const Duration(seconds: 10), () {
-            loadInterstitialAd();
-          });
-        },
-      ),
-    );
+    return;
   }
 
   static void incrementLevelClick() {
@@ -113,154 +66,35 @@ class AdManager {
   static bool _isFirstAdShown = false;
 
   static bool shouldShowInterstitialAd() {
-    if (!showInterstitialAds) return false;
-
-    if (!_isFirstAdShown) {
-      _isFirstAdShown = true;
-      adClickCounter = 0; // Reset counter so next ad is exactly levelAdFrequency clicks away
-      return true;
-    }
-
-    return (adClickCounter % levelAdFrequency == 0);
+    return false;
   }
 
   static void showInterstitialAd(VoidCallback onAdDismissed) {
-    incrementLevelClick();
-    if (!shouldShowInterstitialAd()) {
-      onAdDismissed();
-      return;
-    }
-    if (_interstitialAd == null) {
-      debugPrint('Warning: attempt to show interstitial before loaded.');
-      onAdDismissed();
-      return;
-    }
-    _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
-      onAdDismissedFullScreenContent: (ad) {
-        ad.dispose();
-        _interstitialAd = null;
-        loadInterstitialAd(); // Load next ad
-        onAdDismissed();
-      },
-      onAdFailedToShowFullScreenContent: (ad, error) {
-        ad.dispose();
-        _interstitialAd = null;
-        loadInterstitialAd(); // Load next ad
-        onAdDismissed();
-      },
-    );
-    _interstitialAd!.show();
+    onAdDismissed();
   }
 
   static void loadRewardedAd() {
-    if (rewardedAdUnitId.isEmpty) return;
-    RewardedAd.load(
-      adUnitId: rewardedAdUnitId,
-      request: const AdRequest(),
-      rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: (ad) {
-          _rewardedAd = ad;
-        },
-        onAdFailedToLoad: (error) {
-          debugPrint('RewardedAd failed to load: $error');
-          _rewardedAd = null;
-        },
-      ),
-    );
+    return;
   }
 
   static bool showRewardedAd(Function(RewardItem) onRewardEarned, VoidCallback onAdDismissed) {
-    if (_rewardedAd == null) {
-      debugPrint('Warning: attempt to show rewarded ad before loaded.');
-      onAdDismissed();
-      return false;
-    }
-    _rewardedAd!.fullScreenContentCallback = FullScreenContentCallback(
-      onAdDismissedFullScreenContent: (ad) {
-        ad.dispose();
-        _rewardedAd = null;
-        loadRewardedAd(); // Load next ad
-        onAdDismissed();
-      },
-      onAdFailedToShowFullScreenContent: (ad, error) {
-        ad.dispose();
-        _rewardedAd = null;
-        loadRewardedAd(); // Load next ad
-        onAdDismissed();
-      },
-    );
-    _rewardedAd!.show(onUserEarnedReward: (AdWithoutView ad, RewardItem rewardItem) {
-      onRewardEarned(rewardItem);
-    });
-    return true;
+    onAdDismissed();
+    return false;
   }
 
   static BannerAd? createBannerAd(VoidCallback onAdLoaded) {
-    if (!showBannerAds || bannerAdUnitId.isEmpty) return null;
-    return BannerAd(
-      adUnitId: bannerAdUnitId,
-      size: AdSize.banner,
-      request: const AdRequest(),
-      listener: BannerAdListener(
-        onAdLoaded: (_) => onAdLoaded(),
-        onAdFailedToLoad: (ad, error) {
-          ad.dispose();
-          debugPrint('BannerAd failed to load: $error');
-        },
-      ),
-    );
+    return null;
   }
 
   static void loadAppOpenAd() {
-    if (appOpenAdUnitId.isEmpty) return;
-    AppOpenAd.load(
-      adUnitId: appOpenAdUnitId,
-      request: const AdRequest(),
-      adLoadCallback: AppOpenAdLoadCallback(
-        onAdLoaded: (ad) {
-          _appOpenLoadTime = DateTime.now();
-          _appOpenAd = ad;
-          if (!_isFirstAppOpenAdShown) {
-            _isFirstAppOpenAdShown = true;
-            showAppOpenAdIfAvailable();
-          }
-        },
-        onAdFailedToLoad: (error) {
-          debugPrint('AppOpenAd failed to load: $error');
-        },
-      ),
-    );
+    return;
   }
 
   static bool get isAdAvailable {
-    return _appOpenAd != null && _appOpenLoadTime != null && 
-           DateTime.now().difference(_appOpenLoadTime!) < const Duration(hours: 4);
+    return false;
   }
 
   static void showAppOpenAdIfAvailable() {
-    if (!isAdAvailable) {
-      loadAppOpenAd();
-      return;
-    }
-    if (_isShowingAd) return;
-
-    _appOpenAd!.fullScreenContentCallback = FullScreenContentCallback(
-      onAdShowedFullScreenContent: (ad) {
-        _isShowingAd = true;
-      },
-      onAdFailedToShowFullScreenContent: (ad, error) {
-        _isShowingAd = false;
-        ad.dispose();
-        _appOpenAd = null;
-        loadAppOpenAd();
-      },
-      onAdDismissedFullScreenContent: (ad) {
-        _isShowingAd = false;
-        ad.dispose();
-        _appOpenAd = null;
-        loadAppOpenAd();
-      },
-    );
-    _appOpenAd!.show();
+    return;
   }
 }
