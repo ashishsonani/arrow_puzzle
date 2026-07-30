@@ -487,9 +487,10 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
               );
               Navigator.pop(context);
               if (!adShown) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('No ad available right now. Please try again later.')),
-                );
+                setState(() {
+                  freeHints++;
+                });
+                _useHint();
               }
             },
             child: const Text('Watch', style: TextStyle(color: Colors.white)),
@@ -564,9 +565,10 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
                       () {}
                     );
                     if (!adShown) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('No ad available right now. Please try again later.')),
-                      );
+                      setState(() {
+                        currentHearts = maxHearts;
+                      });
+                      if (mounted) Navigator.of(context).pop();
                     }
                   },
                   child: const Row(
@@ -618,6 +620,15 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
             const SizedBox(height: 12),
             Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2))),
             const SizedBox(height: 20),
+            ListTile(
+              leading: const Icon(Icons.refresh_rounded, color: Color(0xFF4CAF50)),
+              title: const Text('Restart Level', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(context);
+                _loadLevel();
+              },
+            ),
+            const Divider(color: Colors.white12, height: 1, indent: 60),
             ListTile(
               leading: const Icon(Icons.settings, color: Color(0xFF4CAF50)),
               title: const Text('Settings', style: TextStyle(color: Colors.white)),
@@ -710,9 +721,17 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
                             color: Color(0xFF4CAF50), // Green level text
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 24),
-                          onPressed: () => _showSettingsMenu(context),
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.refresh_rounded, color: Colors.white, size: 24),
+                              onPressed: _loadLevel,
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 24),
+                              onPressed: () => _showSettingsMenu(context),
+                            ),
+                          ],
                         ),
                       ],
                     ),
