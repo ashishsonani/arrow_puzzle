@@ -184,42 +184,56 @@ class PuzzleGenerator {
 
     int minRequiredArrows = max(5, (validCellsCount * 0.35).toInt());
 
-    PuzzleLevel bestLevel = _generateReverseTime(width, height, fillTarget, maxStringLen, level, shape);
-    int attempt = 1;
-    while ((bestLevel.strings.length < minRequiredArrows || !isLevelSolvable(bestLevel)) && attempt < 50) {
+    PuzzleLevel? bestSolvableLevel;
+
+    for (int attempt = 0; attempt < 60; attempt++) {
       PuzzleLevel candidate = _generateReverseTime(width, height, fillTarget, maxStringLen, level + attempt * 1009, shape);
-      if (isLevelSolvable(candidate) && candidate.strings.length >= minRequiredArrows) {
-        bestLevel = candidate;
-        break;
+      if (isLevelSolvable(candidate)) {
+        if (candidate.strings.length >= minRequiredArrows) {
+          return candidate;
+        }
+        if (bestSolvableLevel == null || candidate.strings.length > bestSolvableLevel.strings.length) {
+          bestSolvableLevel = candidate;
+        }
       }
-      if (isLevelSolvable(candidate) && candidate.strings.length > bestLevel.strings.length) {
-        bestLevel = candidate;
-      }
-      attempt++;
     }
 
-    return bestLevel;
+    if (bestSolvableLevel == null || bestSolvableLevel.strings.isEmpty) {
+      for (int attempt = 0; attempt < 60; attempt++) {
+        PuzzleLevel candidate = _generateReverseTime(width, height, fillTarget * 0.7, maxStringLen, level + attempt * 1009 + 500, shape);
+        if (isLevelSolvable(candidate)) {
+          if (bestSolvableLevel == null || candidate.strings.length > bestSolvableLevel.strings.length) {
+            bestSolvableLevel = candidate;
+          }
+        }
+      }
+    }
+
+    return bestSolvableLevel ?? _generateReverseTime(width, height, fillTarget, maxStringLen, level, shape);
   }
 
   static bool isLevelSolvable(PuzzleLevel level) {
     List<PuzzleString> active = List.from(level.strings);
     if (active.isEmpty) return false;
 
+    Set<Point> occupied = {};
+    for (var s in active) {
+      occupied.addAll(s.path);
+    }
+
     bool progress = true;
     while (progress && active.isNotEmpty) {
       progress = false;
-      Set<Point> occupied = {};
-      for (var s in active) {
-        for (var p in s.path) {
-          occupied.add(p);
-        }
-      }
 
       for (int i = 0; i < active.length; i++) {
         var string = active[i];
         Direction dir = string.exitDirection;
         int dx = (dir == Direction.right) ? 1 : (dir == Direction.left) ? -1 : 0;
         int dy = (dir == Direction.down) ? 1 : (dir == Direction.up) ? -1 : 0;
+
+        for (var p in string.path) {
+          occupied.remove(p);
+        }
 
         Point check = Point(string.head.x + dx, string.head.y + dy);
         bool clear = true;
@@ -235,6 +249,8 @@ class PuzzleGenerator {
           active.removeAt(i);
           progress = true;
           break;
+        } else {
+          occupied.addAll(string.path);
         }
       }
     }

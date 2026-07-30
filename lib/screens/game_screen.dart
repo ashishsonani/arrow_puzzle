@@ -9,10 +9,10 @@ import 'privacy_rights_screen.dart';
 import 'advertising_preferences_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
-import 'package:audioplayers/audioplayers.dart';
 import '../models/app_settings.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../services/ad_manager.dart';
+import '../services/sound_manager.dart';
 import 'dart:async';
 
 class GameScreen extends StatefulWidget {
@@ -113,6 +113,8 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
   bool isLevelComplete = false;
   bool showWellDone = false;
   bool showLevelCompleteScreen = false;
+  bool isLoadingLevel = false;
+  bool _isNextLevelLoading = false;
 
   Map<int, AnimationController> animControllers = {};
   Map<int, bool> isWiggling = {};
@@ -128,11 +130,6 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
   
   late AnimationController _damageController;
   late Animation<double> _damageAnimation;
-
-  final List<AudioPlayer> _clickPlayers = List.generate(5, (_) => AudioPlayer());
-  int _clickPlayerIndex = 0;
-  final AudioPlayer _startPlayer = AudioPlayer();
-  final AudioPlayer _errorPlayer = AudioPlayer();
 
   String _getLevelTitle() {
     if (widget.isDailyChallenge) {
@@ -163,11 +160,7 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
   @override
   void initState() {
     super.initState();
-    AudioPlayer.global.setAudioContext(AudioContextConfig(
-      focus: AudioContextConfigFocus.mixWithOthers,
-    ).build());
 
-    _initAudio();
     AdManager.loadInterstitialAd();
     AdManager.loadRewardedAd();
     _loadBannerAd();
@@ -192,16 +185,7 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
     _loadLevel();
   }
 
-  Future<void> _initAudio() async {
-    for (var p in _clickPlayers) {
-      await p.setReleaseMode(ReleaseMode.stop);
-      await p.setSourceAsset('click.wav');
-    }
-    await _errorPlayer.setReleaseMode(ReleaseMode.stop);
-    await _errorPlayer.setSourceAsset('error.wav');
-    await _startPlayer.setReleaseMode(ReleaseMode.stop);
-    await _startPlayer.setSourceAsset('start.wav');
-  }
+
 
   void _loadLevel() {
     for (var c in animControllers.values) {
@@ -219,18 +203,15 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
     if (level <= 5) {
       initialHearts = 2;
       initialHints = 0;
-    } else if (level <= 10) {
+    } else if (level <= 15) {
       initialHearts = 3;
       initialHints = 1;
-    } else if (level < 50) {
-      initialHearts = 3;
-      initialHints = 2;
     } else {
-      initialHearts = 5;
+      initialHearts = 4;
       initialHints = 2;
     }
 
-    setState(() {
+    void updateState() {
       levelData = PuzzleGenerator.getLevel(widget.levelNum);
       activeStrings = List.from(levelData.strings);
       maxHearts = initialHearts;
@@ -240,12 +221,17 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
       isLevelComplete = false;
       showWellDone = false;
       showLevelCompleteScreen = false;
+      _isNextLevelLoading = false;
       _particles = [];
-    });
-
-    if (AppSettings.soundEnabled) {
-      _startPlayer.play(AssetSource('start.wav'));
     }
+
+    if (mounted) {
+      setState(updateState);
+    } else {
+      updateState();
+    }
+
+    SoundManager.playStart();
   }
 
   void _loadBannerAd() {
@@ -266,11 +252,6 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
     }
     _effectController.dispose();
     _damageController.dispose();
-    for (var p in _clickPlayers) {
-      p.dispose();
-    }
-    _startPlayer.dispose();
-    _errorPlayer.dispose();
     _bannerAd?.dispose();
     super.dispose();
   }
@@ -356,11 +337,7 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
 
     if (isClear) {
       if (AppSettings.vibrationEnabled) HapticFeedback.lightImpact();
-      if (AppSettings.soundEnabled) {
-        final p = _clickPlayers[_clickPlayerIndex];
-        p.play(AssetSource('click.wav'));
-        _clickPlayerIndex = (_clickPlayerIndex + 1) % _clickPlayers.length;
-      }
+      SoundManager.playClick();
       AnimationController controller = AnimationController(
         vsync: this,
         duration: const Duration(milliseconds: 600),
@@ -382,37 +359,40 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
       });
     } else {
       if (AppSettings.vibrationEnabled) HapticFeedback.heavyImpact();
-      if (AppSettings.soundEnabled) {
-        _errorPlayer.play(AssetSource('error.wav'));
-      }
+      SoundManager.playError();
+      
+      _damageController.forward().then((_) {
+        if (mounted) _damageController.reverse();
+      });
+
+      AnimationController controller = AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 350),
+      );
+      setState(() {
+        isWiggling[string.id] = true;
+        animControllers[string.id] = controller;
+      });
+
+      controller.forward().then((_) {
+        if (mounted) {
+          setState(() {
+            isWiggling.remove(string.id);
+            animControllers[string.id]?.dispose();
+            animControllers.remove(string.id);
+          });
+        }
+      });
+
       if (currentHearts > 0) {
         setState(() {
           currentHearts--;
         });
         if (currentHearts == 0) {
           _showGameOverDialog();
-        } else {
-          _damageController.forward().then((_) {
-            if (mounted) _damageController.reverse();
-          });
-          AnimationController controller = AnimationController(
-            vsync: this,
-            duration: const Duration(milliseconds: 300),
-          );
-          setState(() {
-            isWiggling[string.id] = true;
-            animControllers[string.id] = controller;
-          });
-          controller.forward().then((_) {
-            if (mounted) {
-              setState(() {
-                isWiggling.remove(string.id);
-                animControllers[string.id]?.dispose();
-                animControllers.remove(string.id);
-              });
-            }
-          });
         }
+      } else {
+        _showGameOverDialog();
       }
     }
   }
@@ -432,7 +412,7 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
 
       if (mounted) {
         if (AppSettings.vibrationEnabled) HapticFeedback.vibrate();
-        if (AppSettings.soundEnabled) AudioPlayer().play(AssetSource('win.wav'));
+        SoundManager.playWin();
         Future.delayed(const Duration(milliseconds: 150), () {
           if (AppSettings.vibrationEnabled) HapticFeedback.vibrate();
         });
@@ -604,7 +584,14 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
                   Navigator.of(context).pop();
                   _loadLevel();
                 },
-                child: const Text('Restart Game', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF4CAF50))),
+                child: const Text(
+                  'Restart Game',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF4CAF50),
+                  ),
+                ),
               ),
             ],
           ),
@@ -822,28 +809,36 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
 
                           List<Listenable> listenables = animControllers.values.toList();
 
+                          Offset? pointerDownPos;
+
                           return InteractiveViewer(
                             minScale: 1.0,
                             maxScale: 4.0,
                             panEnabled: true,
                             scaleEnabled: true,
                             clipBehavior: Clip.none,
-                            child: GestureDetector(
+                            child: Listener(
                               behavior: HitTestBehavior.opaque,
-                              onTapUp: (details) {
-                                if (isLevelComplete) return;
+                              onPointerDown: (event) {
+                                pointerDownPos = event.localPosition;
+                              },
+                              onPointerUp: (event) {
+                                if (isLevelComplete || pointerDownPos == null) return;
 
-                                double cellWidth = gridWidth / levelData.gridWidth;
-                                double cellHeight = gridHeight / levelData.gridHeight;
+                                double distance = (event.localPosition - pointerDownPos!).distance;
+                                if (distance < 15.0) {
+                                  double cellWidth = gridWidth / levelData.gridWidth;
+                                  double cellHeight = gridHeight / levelData.gridHeight;
 
-                                int tx = (details.localPosition.dx / cellWidth).floor();
-                                int ty = (details.localPosition.dy / cellHeight).floor();
+                                  int tx = (event.localPosition.dx / cellWidth).floor();
+                                  int ty = (event.localPosition.dy / cellHeight).floor();
 
-                                for (var string in activeStrings) {
-                                  for (var p in string.path) {
-                                    if (p.x == tx && p.y == ty) {
-                                      _handleTap(string);
-                                      return;
+                                  for (var string in activeStrings) {
+                                    for (var p in string.path) {
+                                      if (p.x == tx && p.y == ty) {
+                                        _handleTap(string);
+                                        return;
+                                      }
                                     }
                                   }
                                 }
@@ -1012,7 +1007,7 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
         // Pop-up: Well Done Banner Overlay
         if (showWellDone)
           Container(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
             child: Center(
               child: AnimatedOpacity(
                 opacity: showWellDone ? 1.0 : 0.0,
@@ -1033,7 +1028,7 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
+                            color: Colors.black.withValues(alpha: 0.08),
                             blurRadius: 15,
                             offset: const Offset(0, 5),
                           ),
@@ -1387,13 +1382,23 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
                     children: [
                       // Next Game Button
                       GestureDetector(
-                        onTap: () {
-                          if (widget.isDailyChallenge) {
-                            widget.onBack();
-                          } else {
-                            widget.onNextLevel();
-                          }
-                        },
+                        onTap: _isNextLevelLoading
+                            ? null
+                            : () async {
+                                if (mounted) {
+                                  setState(() {
+                                    _isNextLevelLoading = true;
+                                  });
+                                }
+                                await Future.delayed(const Duration(milliseconds: 50));
+                                if (!mounted) return;
+
+                                if (widget.isDailyChallenge) {
+                                  widget.onBack();
+                                } else {
+                                  widget.onNextLevel();
+                                }
+                              },
                         child: Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1408,30 +1413,41 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
                               ),
                             ],
                           ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                widget.isDailyChallenge ? 'Done' : 'Next Game',
-                                style: const TextStyle(
-                                  color: Color(0xFF4CAF50),
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              if (!widget.isDailyChallenge) ...[
-                                const SizedBox(height: 2),
-                                Text(
-                                  'Level ${widget.levelNum + 1}',
-                                  style: TextStyle(
-                                    color: const Color(0xFF4CAF50).withOpacity(0.8),
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
+                          child: _isNextLevelLoading
+                              ? const Center(
+                                  child: SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 3,
+                                      color: Color(0xFF4CAF50),
+                                    ),
                                   ),
+                                )
+                              : Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      widget.isDailyChallenge ? 'Done' : 'Next Game',
+                                      style: const TextStyle(
+                                        color: Color(0xFF4CAF50),
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    if (!widget.isDailyChallenge) ...[
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Level ${widget.levelNum + 1}',
+                                        style: TextStyle(
+                                          color: const Color(0xFF4CAF50).withOpacity(0.8),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
-                              ],
-                            ],
-                          ),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -1666,12 +1682,20 @@ class TapAwayPainter extends CustomPainter {
       }
 
       if ((wiggle || hint) && animValue > 0) {
-        double shake = sin(animValue * pi * 4) * 4.0;
+        double shake = wiggle ? sin(animValue * pi * 4) * 3.0 : 0.0;
+        double nudge = wiggle ? sin(animValue * pi) * cellWidth * 0.20 : 0.0;
         Direction dir = string.exitDirection;
+        double nudgeX = 0;
+        double nudgeY = 0;
+        if (dir == Direction.right) nudgeX = nudge;
+        if (dir == Direction.left) nudgeX = -nudge;
+        if (dir == Direction.down) nudgeY = nudge;
+        if (dir == Direction.up) nudgeY = -nudge;
+
         if (dir == Direction.up || dir == Direction.down) {
-          canvas.translate(shake, 0);
+          canvas.translate(shake + nudgeX, nudgeY);
         } else {
-          canvas.translate(0, shake);
+          canvas.translate(nudgeX, shake + nudgeY);
         }
       }
 

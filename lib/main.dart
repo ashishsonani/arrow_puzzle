@@ -6,11 +6,13 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'screens/app_splash_screen.dart';
 import 'models/app_settings.dart';
 import 'services/ad_manager.dart';
+import 'services/sound_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await MobileAds.instance.initialize();
   await AppSettings.init();
+  SoundManager.init();
   runApp(const MyApp());
 }
 

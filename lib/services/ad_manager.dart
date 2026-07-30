@@ -98,6 +98,9 @@ class AdManager {
         onAdFailedToLoad: (error) {
           debugPrint('InterstitialAd failed to load: $error');
           _interstitialAd = null;
+          Future.delayed(const Duration(seconds: 10), () {
+            loadInterstitialAd();
+          });
         },
       ),
     );

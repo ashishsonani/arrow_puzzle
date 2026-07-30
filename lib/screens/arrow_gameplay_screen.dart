@@ -25,20 +25,28 @@ class _ArrowGameplayScreenState extends State<ArrowGameplayScreen> with TickerPr
   }
 
   void _initLevel() {
-    currentLevel = ArrowLevel(
-      id: widget.level.id,
-      title: widget.level.title,
-      difficulty: widget.level.difficulty,
-      initialHearts: widget.level.initialHearts,
-      gridWidth: widget.level.gridWidth,
-      gridHeight: widget.level.gridHeight,
-      paths: widget.level.paths.map((p) => PathArrow(
-        id: p.id,
-        segments: p.segments,
-        state: p.state,
-      )).toList(),
-    );
-    currentHearts = currentLevel.initialHearts;
+    void updateState() {
+      currentLevel = ArrowLevel(
+        id: widget.level.id,
+        title: widget.level.title,
+        difficulty: widget.level.difficulty,
+        initialHearts: widget.level.initialHearts,
+        gridWidth: widget.level.gridWidth,
+        gridHeight: widget.level.gridHeight,
+        paths: widget.level.paths.map((p) => PathArrow(
+          id: p.id,
+          segments: p.segments,
+          state: p.state,
+        )).toList(),
+      );
+      currentHearts = currentLevel.initialHearts;
+    }
+
+    if (mounted) {
+      setState(updateState);
+    } else {
+      updateState();
+    }
   }
 
   bool _isPathClear(PathArrow arrow) {
@@ -81,6 +89,8 @@ class _ArrowGameplayScreenState extends State<ArrowGameplayScreen> with TickerPr
         if (currentHearts == 0) {
           _showGameOverDialog();
         }
+      } else {
+        _showGameOverDialog();
       }
     }
   }
@@ -98,25 +108,27 @@ class _ArrowGameplayScreenState extends State<ArrowGameplayScreen> with TickerPr
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Text('Game Over'),
-        content: const Text('You ran out of hearts!'),
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: const Color(0xFF212121),
+        title: const Text('Game Over', style: TextStyle(color: Colors.white)),
+        content: const Text('You ran out of hearts!', style: TextStyle(color: Colors.white70)),
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop(); // Exit
+              Navigator.of(dialogContext).pop();
+              Navigator.of(dialogContext).pop(); // Exit
             },
-            child: const Text('Exit'),
+            child: const Text('Exit', style: TextStyle(color: Colors.white54)),
           ),
           TextButton(
             onPressed: () {
-              Navigator.of(context).pop();
+              Navigator.of(dialogContext).pop();
               setState(() {
-                _initLevel(); // Retry
+                _initLevel();
               });
             },
-            child: const Text('Retry'),
+            child: const Text('Retry', style: TextStyle(color: Color(0xFF4CAF50), fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -231,35 +243,45 @@ class _ArrowGameplayScreenState extends State<ArrowGameplayScreen> with TickerPr
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         final cellSize = constraints.maxWidth / currentLevel.gridWidth;
+                        Offset? pointerDownPos;
+
                         return InteractiveViewer(
                           minScale: 1.0,
                           maxScale: 4.0,
                           panEnabled: true,
                           scaleEnabled: true,
                           clipBehavior: Clip.none,
-                          child: GestureDetector(
+                          child: Listener(
                             behavior: HitTestBehavior.opaque,
-                            onTapUp: (details) {
-                              final localPosition = details.localPosition;
-                              final gridX = (localPosition.dx / cellSize).floor();
-                              final gridY = (localPosition.dy / cellSize).floor();
+                            onPointerDown: (event) {
+                              pointerDownPos = event.localPosition;
+                            },
+                            onPointerUp: (event) {
+                              if (isLevelComplete || pointerDownPos == null) return;
 
-                              PathArrow? tappedArrow;
-                              for (var arrow in currentLevel.paths.reversed) {
-                                if (arrow.state == ArrowState.cleared) continue;
-                                bool found = false;
-                                for (var seg in arrow.segments) {
-                                  if (seg.x == gridX && seg.y == gridY) {
-                                    tappedArrow = arrow;
-                                    found = true;
-                                    break;
+                              final distance = (event.localPosition - pointerDownPos!).distance;
+                              if (distance < 15.0) {
+                                final localPosition = event.localPosition;
+                                final gridX = (localPosition.dx / cellSize).floor();
+                                final gridY = (localPosition.dy / cellSize).floor();
+
+                                PathArrow? tappedArrow;
+                                for (var arrow in currentLevel.paths.reversed) {
+                                  if (arrow.state == ArrowState.cleared) continue;
+                                  bool found = false;
+                                  for (var seg in arrow.segments) {
+                                    if (seg.x == gridX && seg.y == gridY) {
+                                      tappedArrow = arrow;
+                                      found = true;
+                                      break;
+                                    }
                                   }
+                                  if (found) break;
                                 }
-                                if (found) break;
-                              }
 
-                              if (tappedArrow != null) {
-                                _onPathTap(tappedArrow);
+                                if (tappedArrow != null) {
+                                  _onPathTap(tappedArrow);
+                                }
                               }
                             },
                             child: Stack(

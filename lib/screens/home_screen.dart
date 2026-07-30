@@ -19,6 +19,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   BannerAd? _bannerAd;
   bool _isBannerAdLoaded = false;
+  bool _isStartingGame = false;
+  bool _isStartingDaily = false;
 
   @override
   void initState() {
@@ -76,22 +78,35 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: GestureDetector(
-                    onTap: () {
-                      void proceed() {
-                        final now = DateTime.now();
-                        int levelSeed = now.year * 10000 + now.month * 100 + now.day;
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => GameScreen(
-                              initialLevel: levelSeed,
-                              isDailyChallenge: true,
-                            ),
-                          ),
-                        );
-                      }
-                      AdManager.showInterstitialAd(proceed);
-                    },
+                    onTap: _isStartingDaily
+                        ? null
+                        : () async {
+                            setState(() {
+                              _isStartingDaily = true;
+                            });
+                            await Future.delayed(const Duration(milliseconds: 50));
+                            if (!mounted) return;
+
+                            void proceed() async {
+                              final now = DateTime.now();
+                              int levelSeed = now.year * 10000 + now.month * 100 + now.day;
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => GameScreen(
+                                    initialLevel: levelSeed,
+                                    isDailyChallenge: true,
+                                  ),
+                                ),
+                              );
+                              if (mounted) {
+                                setState(() {
+                                  _isStartingDaily = false;
+                                });
+                              }
+                            }
+                            AdManager.showInterstitialAd(proceed);
+                          },
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -269,50 +284,74 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 40),
                   child: GestureDetector(
-                    onTap: () {
-                      void proceed() async {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => GameScreen(initialLevel: currentLevel)),
-                        );
-                        _loadLevel(); // Refresh level when coming back
-                      }
-                      AdManager.showInterstitialAd(proceed);
-                    },
+                    onTap: _isStartingGame
+                        ? null
+                        : () async {
+                            setState(() {
+                              _isStartingGame = true;
+                            });
+                            await Future.delayed(const Duration(milliseconds: 50));
+                            if (!mounted) return;
+
+                            void proceed() async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => GameScreen(initialLevel: currentLevel)),
+                              );
+                              if (mounted) {
+                                setState(() {
+                                  _isStartingGame = false;
+                                });
+                                _loadLevel(); // Refresh level when coming back
+                              }
+                            }
+                            AdManager.showInterstitialAd(proceed);
+                          },
                     child: Container(
                       width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 6), // Further reduced vertical padding
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF4CAF50), // Soft green
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF4CAF50).withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'New Game',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4CAF50), // Soft green
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF4CAF50).withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Level $currentLevel',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                      child: _isStartingGame
+                          ? const Center(
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            )
+                          : Column(
+                              children: [
+                                const Text(
+                                  'New Game',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Level $currentLevel',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.8),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
                     ),
                   ),
                 ),
