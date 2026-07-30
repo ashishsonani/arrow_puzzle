@@ -176,7 +176,7 @@ class ArrowLevelSelectionScreen extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Colors.black26, // Darker box for dark theme
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFF4CAF50).withOpacity(0.3), width: 1), // Green subtle border
+                        border: Border.all(color: const Color(0xFF4CAF50).withValues(alpha: 0.3), width: 1), // Green subtle border
                       ),
                       child: const Center(
                         child: Icon(Icons.gamepad, size: 64, color: Colors.white24),

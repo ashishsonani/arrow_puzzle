@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
+// import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 import 'screens/app_splash_screen.dart';
 import 'models/app_settings.dart';
-import 'services/ad_manager.dart';
+// import 'services/ad_manager.dart';
 import 'services/sound_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await MobileAds.instance.initialize();
+  // await MobileAds.instance.initialize();
   await AppSettings.init();
   SoundManager.init();
   runApp(const MyApp());
@@ -28,7 +28,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    AdManager.loadAppOpenAd();
+    // AdManager.loadAppOpenAd();
   }
 
   @override
@@ -40,7 +40,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      AdManager.showAppOpenAdIfAvailable();
+      // AdManager.showAppOpenAdIfAvailable();
     }
   }
 

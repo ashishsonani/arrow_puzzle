@@ -897,7 +897,7 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.08),
+                                    color: Colors.black.withValues(alpha: 0.08),
                                     blurRadius: 15,
                                     spreadRadius: 2,
                                     offset: const Offset(0, 5),
@@ -964,7 +964,7 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
+                                color: Colors.black.withValues(alpha: 0.08),
                                 blurRadius: 15,
                                 spreadRadius: 2,
                                 offset: const Offset(0, 5),
@@ -998,7 +998,7 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
             if (_damageAnimation.value == 0) return const SizedBox.shrink();
             return IgnorePointer(
               child: Container(
-                color: Colors.red.withOpacity(0.4 * _damageAnimation.value),
+                color: Colors.red.withValues(alpha: 0.4 * _damageAnimation.value),
               ),
             );
           },
@@ -1153,7 +1153,7 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Column(
@@ -1292,7 +1292,7 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
+                            color: Colors.black.withValues(alpha: 0.15),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -1324,9 +1324,9 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.white.withOpacity(0.2)),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                         ),
                         child: Column(
                           children: [
@@ -1407,7 +1407,7 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
                             borderRadius: BorderRadius.circular(30),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.15),
+                                color: Colors.black.withValues(alpha: 0.15),
                                 blurRadius: 10,
                                 offset: const Offset(0, 5),
                               ),
@@ -1440,7 +1440,7 @@ class _LevelPlayWidgetState extends State<LevelPlayWidget> with TickerProviderSt
                                       Text(
                                         'Level ${widget.levelNum + 1}',
                                         style: TextStyle(
-                                          color: const Color(0xFF4CAF50).withOpacity(0.8),
+                                          color: const Color(0xFF4CAF50).withValues(alpha: 0.8),
                                           fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -1549,7 +1549,7 @@ class SunburstPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final paint = Paint()
-      ..color = Colors.white.withOpacity(0.04)
+      ..color = Colors.white.withValues(alpha: 0.04)
       ..style = PaintingStyle.fill;
 
     canvas.save();
@@ -1634,7 +1634,7 @@ class TapAwayPainter extends CustomPainter {
 
     if (showGridLines) {
       final linePaint = Paint()
-        ..color = Colors.white.withOpacity(0.15)
+        ..color = Colors.white.withValues(alpha: 0.15)
         ..strokeWidth = 2.0
         ..style = PaintingStyle.stroke;
 

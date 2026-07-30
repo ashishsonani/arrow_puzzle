@@ -11,8 +11,8 @@ class AdManager {
   static DateTime? _appOpenLoadTime;
   static bool _isFirstAppOpenAdShown = false;
 
-  static bool showBannerAds = true;
-  static bool showInterstitialAds = true;
+  static bool showBannerAds = false;
+  static bool showInterstitialAds = false;
   static int levelAdFrequency = 2;
   static int adClickCounter = 0;
 

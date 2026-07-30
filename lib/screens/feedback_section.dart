@@ -24,7 +24,7 @@ class _FeedbackSectionState extends State<FeedbackSection> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF4CAF50).withOpacity(0.2) : const Color(0xFF1E1E1E),
+          color: isSelected ? const Color(0xFF4CAF50).withValues(alpha: 0.2) : const Color(0xFF1E1E1E),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: isSelected ? const Color(0xFF4CAF50) : Colors.white24),
         ),

@@ -113,12 +113,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: const Color(0xFF161616), // Subtle dark gray
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.05),
+                          color: Colors.white.withValues(alpha: 0.05),
                           width: 1,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.5),
+                            color: Colors.black.withValues(alpha: 0.5),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -131,10 +131,10 @@ class _HomeScreenState extends State<HomeScreen> {
                             width: 50,
                             height: 50,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF4CAF50).withOpacity(0.1),
+                              color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(15),
                               border: Border.all(
-                                color: const Color(0xFF4CAF50).withOpacity(0.3),
+                                color: const Color(0xFF4CAF50).withValues(alpha: 0.3),
                               ),
                             ),
                             child: const Icon(
@@ -179,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF4CAF50).withOpacity(0.3),
+                                  color: const Color(0xFF4CAF50).withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),
@@ -315,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF4CAF50).withOpacity(0.3),
+                            color: const Color(0xFF4CAF50).withValues(alpha: 0.3),
                             blurRadius: 10,
                             offset: const Offset(0, 5),
                           ),
@@ -346,7 +346,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Text(
                                   'Level $currentLevel',
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withValues(alpha: 0.8),
                                     fontSize: 14,
                                   ),
                                 ),

@@ -39,11 +39,13 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
     try {
       final XFile? image = await _picker.pickImage(source: source);
       if (image != null) {
+        if (!mounted) return;
         final caption = await Navigator.push<String>(
           context,
           MaterialPageRoute(builder: (context) => FilePreviewScreen(filePath: image.path)),
         );
 
+        if (!mounted) return;
         if (caption != null) {
           setState(() {
             _messages.add(<String, dynamic>{
@@ -101,6 +103,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
         final filePath = result.files.single.path!;
         final fileName = result.files.single.name;
         
+        if (!mounted) return;
         final caption = await Navigator.push<String>(
           context,
           MaterialPageRoute(builder: (context) => FilePreviewScreen(
@@ -110,6 +113,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
           )),
         );
 
+        if (!mounted) return;
         if (caption != null) {
           setState(() {
             _messages.add(<String, dynamic>{

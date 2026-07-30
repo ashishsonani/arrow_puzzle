@@ -51,8 +51,11 @@ class _MyTicketsScreenState extends State<MyTicketsScreen> {
           if (latestMessage != null) {
             if (latestMessage['type'] == 'text') {
               subtitle = latestMessage['text'];
-            } else if (latestMessage['type'] == 'document') subtitle = 'Document: ${latestMessage['name']}';
-            else if (latestMessage['type'] == 'image') subtitle = 'Photo${latestMessage['caption'] != null ? ': ${latestMessage['caption']}' : ''}';
+            } else if (latestMessage['type'] == 'document') {
+              subtitle = 'Document: ${latestMessage['name']}';
+            } else if (latestMessage['type'] == 'image') {
+              subtitle = 'Photo${latestMessage['caption'] != null ? ': ${latestMessage['caption']}' : ''}';
+            }
           }
 
           return _buildTicketItem(

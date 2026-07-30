@@ -195,7 +195,7 @@ class _ArrowGameplayScreenState extends State<ArrowGameplayScreen> with TickerPr
                     decoration: BoxDecoration(
                       color: Colors.white12,
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)],
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4)],
                     ),
                     child: Row(
                       children: [
@@ -223,7 +223,7 @@ class _ArrowGameplayScreenState extends State<ArrowGameplayScreen> with TickerPr
                     decoration: BoxDecoration(
                       color: Colors.white12,
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4)],
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4)],
                     ),
                     child: Text(
                       currentLevel.difficulty,
@@ -383,7 +383,7 @@ class DottedShapePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.grey.withOpacity(0.3)
+      ..color = Colors.grey.withValues(alpha: 0.3)
       ..style = PaintingStyle.fill;
 
     for (int y = 0; y < gridHeight; y++) {
